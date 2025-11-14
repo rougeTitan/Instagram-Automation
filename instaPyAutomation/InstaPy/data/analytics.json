@@ -1,0 +1,23 @@
+{
+  "posts": [],
+  "engagement_by_time": {},
+  "engagement_by_day": {},
+  "hashtag_performance": {},
+  "follower_history": [],
+  "action_history": [
+    {
+      "type": "like",
+      "timestamp": "2025-11-09T13:31:34.199004",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-09T13:31:55.424635",
+      "details": {
+        "hashtag": "travel"
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# Modern Instagram Automation - Dependencies
+undetected-chromedriver>=3.5.0
+selenium>=4.15.0
+python-dotenv>=1.0.0
+colorama>=0.4.6
+
+# AI Comment Generation (Optional)
+# Google Gemini (RECOMMENDED - FREE!)
+# google-generativeai>=0.3.0
+# OR OpenAI (Paid)
+# openai>=1.0.0
+
+# Additional dependencies for AI
+requests>=2.31.0
+pillow>=10.0.0
