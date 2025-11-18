@@ -1,9 +1,9 @@
 # GCP Deployment Troubleshooting Log
 
-**Date:** November 14, 2025  
+**Date:** November 14, 2025 (Updated: November 18, 2025)  
 **Project:** Instagram Automation Bot  
 **VM Instance:** instagram-bot (e2-micro, us-east1-c)  
-**Final Status:** ✅ Successfully Deployed & Running 24/7
+**Final Status:** ✅ Successfully Deployed with Auto Start/Stop (85% Cost Reduction)
 
 ---
 
@@ -308,6 +308,130 @@ This creates a virtual display so Chrome can run without physical monitor.
 
 ---
 
+## Issue 9: High Costs - VM Running 24/7 Unnecessarily
+
+**Date:** November 18, 2025
+
+### Problem
+VM was running 24/7 even though bot only executes for ~30 minutes per day
+- Running continuously: 720 hours/month
+- Actual usage needed: ~60-75 hours/month
+- Wasting: ~90% of compute time and costs
+
+### Root Cause
+- Initial deployment configured for 24/7 operation
+- No auto-start/stop mechanism
+- VM idle most of the time consuming resources and costs
+
+### Solution
+**Implemented GCP Cloud Scheduler for Auto Start/Stop:**
+
+#### Step 1: Enable Cloud Scheduler API
+```bash
+gcloud services enable cloudscheduler.googleapis.com --project=emerald-diagram-478119-n2
+```
+
+#### Step 2: Create Scheduler Jobs (16 total)
+Created automated start/stop jobs for:
+- **7 daily bot runs** (Monday-Sunday) - 14 jobs
+- **1 daily report generation** (9 PM) - 2 jobs
+
+#### Schedule Configuration:
+
+| Day | Bot Run | VM Start | VM Stop | Duration |
+|-----|---------|----------|---------|----------|
+| Monday | 11:00 AM | 10:45 AM | 12:00 PM | 1h 15m |
+| Tuesday | 11:00 AM | 10:45 AM | 12:00 PM | 1h 15m |
+| Wednesday | 11:00 AM | 10:45 AM | 12:00 PM | 1h 15m |
+| Thursday | 12:00 PM | 11:45 AM | 1:00 PM | 1h 15m |
+| Friday | 1:00 PM | 12:45 PM | 2:00 PM | 1h 15m |
+| Saturday | 10:00 AM | 9:45 AM | 11:00 AM | 1h 15m |
+| Sunday | 10:00 AM | 9:45 AM | 11:00 AM | 1h 15m |
+| Report | 9:00 PM | 8:45 PM | 9:15 PM | 30m |
+
+#### PowerShell Commands Used:
+```powershell
+# Enable API
+gcloud services enable cloudscheduler.googleapis.com --project=emerald-diagram-478119-n2
+
+# Create scheduler jobs (example for Monday)
+gcloud scheduler jobs create http start-vm-monday `
+  --location=us-east1 `
+  --schedule="45 10 * * 1" `
+  --time-zone="America/Los_Angeles" `
+  --uri="https://compute.googleapis.com/compute/v1/projects/emerald-diagram-478119-n2/zones/us-east1-c/instances/instagram-bot/start" `
+  --http-method=POST `
+  --oauth-service-account-email="263660997732-compute@developer.gserviceaccount.com" `
+  --project=emerald-diagram-478119-n2
+
+gcloud scheduler jobs create http stop-vm-monday `
+  --location=us-east1 `
+  --schedule="0 12 * * 1" `
+  --time-zone="America/Los_Angeles" `
+  --uri="https://compute.googleapis.com/compute/v1/projects/emerald-diagram-478119-n2/zones/us-east1-c/instances/instagram-bot/stop" `
+  --http-method=POST `
+  --oauth-service-account-email="263660997732-compute@developer.gserviceaccount.com" `
+  --project=emerald-diagram-478119-n2
+
+# (Repeated for all 7 days + daily report)
+```
+
+#### Step 3: Stop VM and Let Scheduler Manage
+```bash
+gcloud compute instances stop instagram-bot --zone=us-east1-c --project=emerald-diagram-478119-n2
+```
+
+### Cost Analysis
+
+#### Before (24/7 Operation):
+- **Runtime:** 720 hours/month (24 hours × 30 days)
+- **e2-micro cost:** ~$6.50/month
+- **Storage:** ~$0.40/month
+- **Total:** ~$6.90/month
+
+#### After (Auto Start/Stop):
+- **Runtime:** ~75 hours/month (2.5 hours × 30 days)
+- **e2-micro cost:** ~$0.60/month (90% reduction!)
+- **Cloud Scheduler:** ~$0.30/month (16 jobs)
+- **Storage:** ~$0.40/month
+- **Total:** ~$1.30/month
+
+**Monthly Savings:** $5.60 (81% cost reduction!)  
+**Annual Savings:** $67.20  
+**Using $300 Credit:** Now lasts 230+ months (~19 years) instead of 46 months!
+
+### Benefits
+✅ **81% cost reduction** - from $6.90 to $1.30 per month  
+✅ **Extended free credit** - 230+ months of free operation  
+✅ **More efficient** - VM only runs when actually needed  
+✅ **Zero manual intervention** - fully automated  
+✅ **Easy monitoring** - Cloud Scheduler dashboard  
+✅ **Same functionality** - bot runs at all scheduled times  
+
+### Verification
+```bash
+# List all scheduler jobs
+gcloud scheduler jobs list --location=us-east1 --project=emerald-diagram-478119-n2
+
+# Check VM status
+gcloud compute instances list --project=emerald-diagram-478119-n2
+
+# Monitor scheduler execution
+# Visit: https://console.cloud.google.com/cloudscheduler?project=emerald-diagram-478119-n2
+```
+
+### Prevention
+- **Always evaluate actual usage** before keeping VMs running 24/7
+- **Use Cloud Scheduler** for predictable start/stop patterns
+- **Monitor Cloud Billing** to catch unnecessary costs early
+- **Set up budget alerts** to notify when spending exceeds thresholds
+
+### Files Created
+- `deployment/setup_vm_scheduler.sh` - Bash setup script
+- `setup_vm_scheduler.ps1` - PowerShell setup script (Windows)
+
+---
+
 ## Final Working Configuration
 
 ### Project Details
@@ -315,8 +439,9 @@ This creates a virtual display so Chrome can run without physical monitor.
 - **VM Name:** instagram-bot
 - **Zone:** us-east1-c
 - **Machine Type:** e2-micro (1 vCPU, 1GB RAM)
-- **Cost:** $6.50/month = $0 for 46 months (using $300 credit)
-- **External IP:** 34.26.122.94
+- **Cost (Updated Nov 18, 2025):** ~$1.30/month with auto start/stop = $0 for 230+ months (~19 years using $300 credit!)
+- **Previous Cost:** $6.50/month = 46 months
+- **External IP:** 34.26.122.94 (dynamic - changes when VM restarts)
 
 ### Cron Schedule (Peak Engagement Times)
 ```cron
@@ -378,18 +503,42 @@ This creates a virtual display so Chrome can run without physical monitor.
 # List all VMs
 gcloud compute instances list --project=emerald-diagram-478119-n2
 
-# Start VM
+# Start VM (usually done automatically by Cloud Scheduler)
 gcloud compute instances start instagram-bot --zone=us-east1-c --project=emerald-diagram-478119-n2
 
-# Stop VM
+# Stop VM (usually done automatically by Cloud Scheduler)
 gcloud compute instances stop instagram-bot --zone=us-east1-c --project=emerald-diagram-478119-n2
 
-# SSH via browser (RECOMMENDED)
+# SSH via browser (RECOMMENDED - VM must be running)
 # Go to: https://console.cloud.google.com/compute/instances
 # Click "SSH" button next to instagram-bot
 
 # Get VM details
 gcloud compute instances describe instagram-bot --zone=us-east1-c --project=emerald-diagram-478119-n2
+```
+
+### Cloud Scheduler Management (Auto Start/Stop)
+```bash
+# List all scheduler jobs
+gcloud scheduler jobs list --location=us-east1 --project=emerald-diagram-478119-n2
+
+# View specific job details
+gcloud scheduler jobs describe start-vm-monday --location=us-east1 --project=emerald-diagram-478119-n2
+
+# Manually trigger a job (for testing)
+gcloud scheduler jobs run start-vm-monday --location=us-east1 --project=emerald-diagram-478119-n2
+
+# Pause a job (disable auto start/stop temporarily)
+gcloud scheduler jobs pause start-vm-monday --location=us-east1 --project=emerald-diagram-478119-n2
+
+# Resume a paused job
+gcloud scheduler jobs resume start-vm-monday --location=us-east1 --project=emerald-diagram-478119-n2
+
+# Delete a job (if needed)
+gcloud scheduler jobs delete start-vm-monday --location=us-east1 --project=emerald-diagram-478119-n2
+
+# Monitor in GCP Console
+# https://console.cloud.google.com/cloudscheduler?project=emerald-diagram-478119-n2
 ```
 
 ### File Upload
@@ -459,10 +608,11 @@ mkdir -p logs
 - Credentials configured in .env
 - Logs directory for monitoring
 
-✅ **Cost Optimization:**
-- e2-micro instance: $6.50/month
-- $300 free credit: 46 months of free operation
-- Zero cost for 4 years
+✅ **Cost Optimization (Updated Nov 18, 2025):**
+- e2-micro with auto start/stop: ~$1.30/month (81% savings!)
+- Cloud Scheduler: 16 jobs for automated VM management
+- $300 free credit: 230+ months of free operation (~19 years!)
+- Runtime reduced from 720 hrs/month to ~75 hrs/month
 
 ✅ **Automation Working:**
 - 7-day schedule covering all peak times
@@ -482,6 +632,9 @@ mkdir -p logs
 5. **Create wrapper scripts** for cron jobs (Xvfb, logging, error handling)
 6. **Test manually first** before adding to cron
 7. **Monitor logs** regularly: `tail -f ~/instagram-bot/logs/cron.log`
+8. **Implement auto start/stop** for VMs with predictable schedules - saves 80%+ on costs
+9. **Use Cloud Scheduler** for automated VM lifecycle management
+10. **Set up budget alerts** to monitor spending and catch issues early
 
 ### ❌ Don't Do This
 1. Don't fight with local SSH key configuration - Web SSH just works
@@ -497,50 +650,74 @@ mkdir -p logs
 
 If bot stops working:
 
-1. **Check VM is running:**
+1. **Check VM status (may be stopped by scheduler):**
    ```bash
    gcloud compute instances list --project=emerald-diagram-478119-n2
+   # VM will show TERMINATED when stopped - this is NORMAL with auto start/stop
    ```
 
-2. **Check cron logs:**
+2. **Verify scheduler jobs are enabled:**
    ```bash
+   gcloud scheduler jobs list --location=us-east1 --project=emerald-diagram-478119-n2
+   # All jobs should show STATE: ENABLED
+   ```
+
+3. **Check cron logs (VM must be running or start it manually):**
+   ```bash
+   # Start VM if stopped
+   gcloud compute instances start instagram-bot --zone=us-east1-c --project=emerald-diagram-478119-n2
+   
    # SSH into VM (use Web SSH from Console)
    tail -50 ~/instagram-bot/logs/cron.log
+   tail -50 ~/instagram-bot/logs/reports.log
    ```
 
-3. **Verify cron jobs:**
+4. **Check Cloud Scheduler execution history:**
+   ```bash
+   # View in GCP Console
+   # https://console.cloud.google.com/cloudscheduler?project=emerald-diagram-478119-n2
+   # Look for failed executions or errors
+   ```
+
+5. **Verify cron jobs (on VM):**
    ```bash
    crontab -l
    ```
 
-4. **Test manually:**
+6. **Test manually (start VM first if stopped):**
    ```bash
    cd ~/instagram-bot
    source venv/bin/activate
    python scheduled_automation.py
    ```
 
-5. **Check Instagram credentials:**
+7. **Check Instagram credentials:**
    ```bash
    cat ~/instagram-bot/.env
    # Verify INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD
    ```
 
-6. **Verify Chrome and Xvfb:**
+8. **Verify Chrome and Xvfb:**
    ```bash
    google-chrome --version
    which xvfb-run
    ```
 
-7. **Check disk space:**
+9. **Check disk space:**
    ```bash
    df -h
    ```
 
-8. **Check memory:**
-   ```bash
-   free -h
-   ```
+10. **Check memory:**
+    ```bash
+    free -h
+    ```
+
+11. **Verify timezone is correct:**
+    ```bash
+    timedatectl
+    # Should show: America/Los_Angeles (PST, -0800)
+    ```
 
 ---
 
@@ -554,6 +731,13 @@ If bot stops working:
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** November 14, 2025  
-**Status:** ✅ Production Ready - Bot Running 24/7
+**Document Version:** 2.0  
+**Last Updated:** November 18, 2025  
+**Status:** ✅ Production Ready - Bot Running with Auto Start/Stop (Cost Optimized)
+
+**Major Updates:**
+- Added Issue 9: Implemented Cloud Scheduler for 81% cost reduction
+- Updated cost estimates: $1.30/month (from $6.90/month)
+- Extended free credit usage: 230+ months (from 46 months)
+- Added Cloud Scheduler management commands
+- Updated troubleshooting checklist for auto start/stop scenarios
