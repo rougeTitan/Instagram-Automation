@@ -34,105 +34,100 @@ class InstagramActions:
                 print(f"⚠️  Could not initialize AI comments: {e}")
                 self.use_ai_comments = False
     
-    def login(self, username, password):
-        """Login to Instagram"""
-        print(f"🔐 Logging in as {username}...")
-        
-        try:
-            self.driver.get(Config.LOGIN_URL)
-            print("→ Waiting for page to load...")
-            self.human.random_delay(3, 5)
-            
-            # Find username field
-            print("→ Finding username field...")
-            username_input = self.wait.until(
-                EC.presence_of_element_located((By.NAME, "username"))
-            )
-            
-            # Type username with human-like speed
-            print("→ Typing username...")
-            username_input.clear()
-            self.human.human_type(username_input, username, 'normal')
-            self.human.random_delay(1, 2)
-            
-            # Find password field
-            print("→ Finding password field...")
-            password_input = self.driver.find_element(By.NAME, "password")
-            
-            # Type password
-            print("→ Typing password...")
-            password_input.clear()
-            self.human.human_type(password_input, password, 'normal')
-            self.human.random_delay(2, 3)
-            
-            # Wait for login button to be enabled - try multiple selectors
-            print("→ Waiting for login button...")
-            login_button = None
-            button_selectors = [
-                "//button[@type='submit']",
-                "//button[contains(text(), 'Log in')]",
-                "//button[contains(text(), 'Log In')]",
-                "//*[@id='loginForm']//button",
-                "//div[contains(@class, 'x9f619')]//button[@type='submit']"
-            ]
-            
-            for selector in button_selectors:
-                try:
-                    login_button = self.wait.until(
-                        EC.element_to_be_clickable((By.XPATH, selector))
-                    )
-                    print(f"✓ Found login button with selector: {selector}")
-                    break
-                except:
-                    continue
-            
-            if not login_button:
-                print("✗ Could not find login button")
-                return False
-                
-            self.human.random_delay(1, 2)
-            
-            # Click login button
-            print("→ Clicking login button...")
+    def login(self, username, password, max_retries=3):
+        """Login to Instagram with retry logic"""
+        for attempt in range(1, max_retries + 1):
+            print(f"🔐 Logging in as {username}... (Attempt {attempt}/{max_retries})")
             try:
-                login_button.click()
-            except:
-                # Fallback: use JavaScript click
-                print("→ Using JavaScript click...")
-                self.driver.execute_script("arguments[0].click();", login_button)
-            
-            # Wait for login to complete
-            print("→ Waiting for login to complete...")
-            self.human.random_delay(5, 8)
-            
-            # Check if we're logged in
-            current_url = self.driver.current_url
-            if 'login' in current_url.lower():
-                print("✗ Still on login page - credentials may be incorrect")
-                return False
-            
-            # Dismiss all dialogs (Save Login, Notifications, etc.)
-            print("→ Handling post-login dialogs...")
-            self.human.random_delay(2, 3)
-            
-            # Try multiple times to catch all dialogs
-            for i in range(3):
-                self.dismiss_all_dialogs()
+                self.driver.get(Config.LOGIN_URL)
+                print("→ Waiting for page to load...")
+                self.human.random_delay(3, 5)
+
+                # Find username field
+                print("→ Finding username field...")
+
+                username_input = self.wait.until(
+                    EC.presence_of_element_located((By.NAME, "username"))
+                )
+
+                # Type username with human-like speed
+                print("→ Typing username...")
+                username_input.clear()
+                self.human.human_type(username_input, username, 'normal')
                 self.human.random_delay(1, 2)
-            
-            print("✓ Login successful")
-            return True
-            
-        except Exception as e:
-            print(f"✗ Login failed: {e}")
-            print(f"✗ Current URL: {self.driver.current_url}")
-            print(f"✗ Page title: {self.driver.title}")
-            import traceback
-            traceback.print_exc()
-            
-            # Keep browser open for debugging
-            input("\nPress ENTER to close browser and see what went wrong...")
-            return False
+
+                # Type password
+                print("→ Typing password...")
+                password_input = self.driver.find_element(By.NAME, "password")
+                password_input.clear()
+                self.human.human_type(password_input, password, 'normal')
+                self.human.random_delay(2, 3)
+
+                # Wait for login button to be enabled - try multiple selectors
+                print("→ Waiting for login button...")
+                login_button = None
+                button_selectors = [
+                    "//button[@type='submit']",
+                    "//button[contains(text(), 'Log in')]",
+                    "//button[contains(text(), 'Log In')]",
+                    "//*[@id='loginForm']//button",
+                    "//div[contains(@class, 'x9f619')]//button[@type='submit']"
+                ]
+
+                for selector in button_selectors:
+                    try:
+                        login_button = self.wait.until(
+                            EC.element_to_be_clickable((By.XPATH, selector))
+                        )
+                        print(f"✓ Found login button with selector: {selector}")
+                        break
+                    except:
+                        continue
+
+                if not login_button:
+                    print("✗ Could not find login button")
+                    continue
+
+                self.human.random_delay(1, 2)
+
+                # Click login button
+                print("→ Clicking login button...")
+                try:
+                    login_button.click()
+                except:
+                    # Fallback: use JavaScript click
+                    print("→ Using JavaScript click...")
+                    self.driver.execute_script("arguments[0].click();", login_button)
+
+                # Wait for login to complete
+                print("→ Waiting for login to complete...")
+                self.human.random_delay(5, 8)
+
+                # Check if we're logged in
+                current_url = self.driver.current_url
+                if 'login' in current_url.lower():
+                    print("✗ Still on login page - credentials may be incorrect")
+                    continue
+
+                # Dismiss all dialogs (Save Login, Notifications, etc.)
+                print("→ Handling post-login dialogs...")
+                self.human.random_delay(2, 3)
+
+                # Try multiple times to catch all dialogs
+                for i in range(3):
+                    self.dismiss_all_dialogs()
+                    self.human.random_delay(1, 2)
+
+                print("✓ Login successful")
+                return True
+            except Exception as e:
+                print(f"✗ Login attempt {attempt} failed: {e}")
+                if attempt < max_retries:
+                    print("↻ Retrying login...")
+                self.human.random_delay(2, 4)
+                continue
+        print(f"✗ All login attempts failed after {max_retries} retries.")
+        return False
     
     def handle_save_login_prompt(self):
         """Handle 'Save Your Login Info' prompt"""
@@ -487,136 +482,170 @@ class InstagramActions:
         
         try:
             # If post element provided, click it first
-            if post_element:
-                self.human.human_click(post_element)
-                self.human.random_delay(2, 4)
-            
-            # Generate AI comment if enabled and no comment provided
-            if comment_text is None and self.use_ai_comments:
-                print("🤖 Generating AI comment...")
-                comment_text = self.ai_generator.generate_comment_for_post(self.driver)
-                
-                if not comment_text:
-                    print("✗ Could not generate comment")
-                    return False
-                
-                print(f"✓ Generated: {comment_text}")
-            elif comment_text is None:
-                # Fallback to generic comments (BMP-compatible emojis only)
-                comment_text = random.choice([
-                    "Love this!",
-                    "Amazing!",
-                    "Beautiful!",
-                    "So good!",
-                    "Great shot!",
-                    "Incredible!",
-                    "Nice!",
-                    "Awesome!",
-                ])
-                print(f"💬 Using: {comment_text}")
-            
-            # Wait for page to stabilize
-            self.human.random_delay(3, 5)
-            
-            # Find textarea directly - no need to click comment button!
-            print("→ Finding comment textarea...")
-            textarea = None
-            try:
-                textarea = WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Add a comment…' and @placeholder='Add a comment…']"))
-                )
-                print(f"✓ Found textarea")
-            except:
-                print(f"✗ Textarea not found")
-                return False
-            
-            # Focus the textarea with JavaScript
-            focus_result = self.driver.execute_script("""
-                var textarea = document.querySelector("textarea[aria-label='Add a comment…']") ||
-                              document.querySelector("textarea[placeholder='Add a comment…']");
-                if (!textarea) return {success: false};
-                textarea.value = '';
-                textarea.focus();
-                textarea.click();
-                textarea.focus();
-                return {success: true};
-            """)
-            
-            if not focus_result.get('success'):
-                print("✗ Could not focus textarea")
-                return False
-            
-            # Wait for focus
-            self.human.random_delay(1, 2)
-            
-            # Refind textarea to avoid stale element
-            print(f"→ Typing comment: '{comment_text}'")
-            try:
-                textarea = WebDriverWait(self.driver, 5).until(
-                    EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Add a comment…' and @placeholder='Add a comment…']"))
-                )
-                textarea.send_keys(comment_text)
-            except Exception as e:
-                print(f"✗ Could not type: {e}")
-                return False
-            
-            # Verify it typed
-            verify_result = self.driver.execute_script("""
-                var textarea = document.querySelector("textarea[aria-label='Add a comment…']");
-                return {value: textarea ? textarea.value : ''};
-            """)
-            print(f"✓ Typed: '{verify_result.get('value', '')}'")
-            
-            # Wait before submitting
-            self.human.random_delay(2, 3)
-            
-            # Submit by clicking Post button
-            print(f"→ Submitting comment...")
-            self.human.random_delay(1, 2)
-            
-            submit_result = self.driver.execute_script("""
-                // Find Post button
-                var buttons = Array.from(document.querySelectorAll('div[role="button"]'));
-                var postBtn = buttons.find(btn => btn.innerText.trim() === 'Post');
-                
-                if (postBtn) {
-                    postBtn.click();
-                    return {success: true, method: 'Post button (div)'};
-                }
-                
-                // Try button element
-                buttons = Array.from(document.querySelectorAll('button'));
-                postBtn = buttons.find(btn => btn.innerText.trim() === 'Post');
-                
-                if (postBtn && !postBtn.disabled) {
-                    postBtn.click();
-                    return {success: true, method: 'Post button (button)'};
-                }
-                
-                return {success: false, error: 'Post button not found'};
-            """)
-            
-            if not submit_result.get('success'):
-                print(f"✗ {submit_result.get('error', 'Could not submit')}")
-                return False
-            
-            print(f"✓ Submitted via {submit_result.get('method')}")
-            
-            # Wait for comment to post
-            self.human.random_delay(3, 5)
-            
-            # Verify comment posted (textarea should be empty)
-            verify_submit = self.driver.execute_script("""
-                var textarea = document.querySelector("textarea[aria-label='Add a comment…']");
-                return {isEmpty: textarea ? textarea.value === '' : false};
-            """)
-            
-            if verify_submit.get('isEmpty'):
+            max_retries = 3
+            for attempt in range(1, max_retries + 1):
+                try:
+                    # If post element provided, click it first
+                    if post_element:
+                        self.human.human_click(post_element)
+                        self.human.random_delay(2, 4)
+
+                    # Generate AI comment if enabled and no comment provided
+                    if comment_text is None and self.use_ai_comments:
+                        print("🤖 Generating AI comment...")
+                        comment_text = self.ai_generator.generate_comment_for_post(self.driver)
+                        if not comment_text:
+                            print("✗ Could not generate comment")
+                            return False
+                        print(f"✓ Generated: {comment_text}")
+                    elif comment_text is None:
+                        # Fallback to generic comments (BMP-compatible emojis only)
+                        comment_text = random.choice([
+                            "Love this!",
+                            "Amazing!",
+                            "Beautiful!",
+                            "So good!",
+                            "Great shot!",
+                            "Incredible!",
+                            "Nice!",
+                            "Awesome!",
+                        ])
+                        print(f"💬 Using: {comment_text}")
+
+                    # Wait for page to stabilize
+                    self.human.random_delay(3, 5)
+
+                    # Find textarea directly - no need to click comment button!
+                    print("→ Finding comment textarea...")
+                    textarea = None
+                    textarea_selectors = [
+                        # Standard post
+                        "//textarea[@aria-label='Add a comment…' and @placeholder='Add a comment…']",
+                        # Sometimes aria-label or placeholder alone
+                        "//textarea[@aria-label='Add a comment…']",
+                        "//textarea[@placeholder='Add a comment…']",
+                        # Reels/Video (Instagram may use different structure)
+                        "//form//textarea",
+                        "//div[contains(@role, 'dialog')]//textarea",
+                        # Fallback: any visible textarea
+                        "//textarea"
+                    ]
+                    for selector in textarea_selectors:
+                        try:
+                            textarea = WebDriverWait(self.driver, 5).until(
+                                EC.presence_of_element_located((By.XPATH, selector))
+                            )
+                            if textarea.is_displayed():
+                                print(f"✓ Found textarea with selector: {selector}")
+                                break
+                        except Exception:
+                            continue
+                    if not textarea:
+                        print(f"✗ Textarea not found with any selector")
+                        continue  # Retry
+
+                    # Refind textarea to avoid stale element
+                    print(f"→ Typing comment: '{comment_text}'")
+                    try:
+                        textarea = WebDriverWait(self.driver, 5).until(
+                            EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Add a comment…' and @placeholder='Add a comment…']"))
+                        )
+                        textarea.send_keys(comment_text)
+                        # Send a space and backspace to trigger Post button enable
+                        from selenium.webdriver.common.keys import Keys
+                        textarea.send_keys(" " + Keys.BACKSPACE)
+                    except Exception as e:
+                        print(f"✗ Could not type: {e}")
+                        continue  # Retry
+
+                    # Verify it typed
+                    verify_result = self.driver.execute_script("""
+                        var textarea = document.querySelector("textarea[aria-label='Add a comment…']");
+                        return {value: textarea ? textarea.value : ''};
+                    """)
+                    print(f"✓ Typed: '{verify_result.get('value', '')}'")
+
+                    # Wait before submitting to ensure Post button is enabled
+                    self.human.random_delay(2, 3)
+
+                    # Submit by clicking Post button
+                    print(f"→ Submitting comment...")
+                    self.human.random_delay(1, 2)
+
+                    submit_result = self.driver.execute_script("""
+                        // Find Post button
+                        var buttons = Array.from(document.querySelectorAll('div[role="button"]'));
+                        var postBtn = buttons.find(btn => btn.innerText.trim() === 'Post');
+
+                        if (postBtn && !postBtn.disabled) {
+                            postBtn.click();
+                            return {success: true, method: 'Post button (div)'};
+                        }
+
+                        // Try button element
+                        buttons = Array.from(document.querySelectorAll('button'));
+                        postBtn = buttons.find(btn => btn.innerText.trim() === 'Post');
+
+                        if (postBtn && !postBtn.disabled) {
+                            postBtn.click();
+                            return {success: true, method: 'Post button (button)'};
+                        }
+
+                        return {success: false, error: 'Post button not found or disabled'};
+                    """)
+
+                    if not submit_result.get('success'):
+                        print(f"✗ {submit_result.get('error', 'Could not submit')}")
+                        continue  # Retry
+
+                    print(f"✓ Submitted via {submit_result.get('method')}")
+
+                    # Wait longer and verify comment is posted before closing modal
+                    import time
+                    max_wait = 10  # seconds
+                    interval = 1
+                    comment_posted = False
+                    for _ in range(int(max_wait / interval)):
+                        self.human.random_delay(interval, interval)
+                        verify_submit = self.driver.execute_script("""
+                            var textarea = document.querySelector('textarea[aria-label="Add a comment…"]');
+                            return {isEmpty: textarea ? textarea.value === '' : false};
+                        """)
+                        if verify_submit.get('isEmpty'):
+                            comment_posted = True
+                            break
+                    if comment_posted:
+                        print(f"✓ Comment posted successfully!")
+                        self.safety.record_action('comment', success=True)
+                        return True
+                    else:
+                        print(f"⚠️  Comment may not have posted (textarea not cleared after waiting)")
+                        continue  # Retry
+                except Exception as e:
+                    print(f"✗ Comment failed: {e}")
+                    continue  # Retry
+            print(f"✗ All comment attempts failed after {max_retries} retries.")
+            return False
+            # Wait longer and verify comment is posted before closing modal
+            import time
+            max_wait = 10  # seconds
+            interval = 1
+            comment_posted = False
+            for _ in range(int(max_wait / interval)):
+                self.human.random_delay(interval, interval)
+                verify_submit = self.driver.execute_script("""
+                    var textarea = document.querySelector('textarea[aria-label="Add a comment…"]');
+                    return {isEmpty: textarea ? textarea.value === '' : false};
+                """)
+                if verify_submit.get('isEmpty'):
+                    comment_posted = True
+                    break
+            if comment_posted:
                 print(f"✓ Comment posted successfully!")
                 self.safety.record_action('comment', success=True)
                 return True
             else:
-                print(f"⚠️  Comment may not have posted (textarea not cleared)")
+                print(f"⚠️  Comment may not have posted (textarea not cleared after waiting)")
                 return False
                 
         except Exception as e:

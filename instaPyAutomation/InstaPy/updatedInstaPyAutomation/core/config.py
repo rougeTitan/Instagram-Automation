@@ -16,9 +16,10 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+
 # Load environment variables from .env file
-# The .env file should be in the project root directory
-env_path = Path(__file__).parent / '.env'
+# The .env file is in the updatedInstaPyAutomation directory (one level up)
+env_path = Path(__file__).parent.parent / '.env'
 load_dotenv(env_path, override=True)
 
 # Debug: Warn if .env file not found

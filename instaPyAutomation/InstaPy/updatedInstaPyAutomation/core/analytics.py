@@ -34,7 +34,6 @@ class InstagramAnalytics:
     def save_data(self):
         """Save analytics data to file"""
         os.makedirs(self.data_dir, exist_ok=True)
-        
         # Convert defaultdict to regular dict for JSON serialization
         save_data = {
             'posts': self.data['posts'],
@@ -44,9 +43,10 @@ class InstagramAnalytics:
             'follower_history': self.data['follower_history'],
             'action_history': self.data['action_history']
         }
-        
+        print(f"[DEBUG] Saving analytics to: {os.path.abspath(self.analytics_file)}")
         with open(self.analytics_file, 'w') as f:
             json.dump(save_data, f, indent=2)
+        print(f"[DEBUG] Analytics saved. Actions: {len(self.data['action_history'])}")
     
     def record_action(self, action_type, details=None):
         """
@@ -61,6 +61,7 @@ class InstagramAnalytics:
             'timestamp': datetime.now().isoformat(),
             'details': details or {}
         }
+        print(f"[DEBUG] Recording action: {action}")
         self.data['action_history'].append(action)
         self.save_data()
     

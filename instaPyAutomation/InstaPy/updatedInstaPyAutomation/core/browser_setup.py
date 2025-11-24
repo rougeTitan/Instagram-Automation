@@ -32,9 +32,10 @@ class BrowserManager:
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-gpu')
         
-        # Window size (looks more human-like)
+        # Window size and position (looks more human-like and fully visible)
         width, height = Config.WINDOW_SIZE.split(',')
         options.add_argument(f'--window-size={width},{height}')
+        options.add_argument('--window-position=0,0')
         
         # User agent (real Chrome user agent)
         options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
@@ -58,10 +59,13 @@ class BrowserManager:
             # Initialize undetected Chrome
             self.driver = uc.Chrome(options=options, version_main=None)
             self.wait = WebDriverWait(self.driver, 10)
-            
+
+            # Maximize window to ensure all elements are visible
+            self.driver.maximize_window()
+
             # Execute stealth scripts
             self.apply_stealth()
-            
+
             print("✓ Browser initialized successfully")
             return self.driver
             

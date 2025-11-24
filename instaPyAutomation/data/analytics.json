@@ -1,0 +1,255 @@
+{
+  "posts": [],
+  "engagement_by_time": {},
+  "engagement_by_day": {},
+  "hashtag_performance": {},
+  "follower_history": [],
+  "action_history": [
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:19:44.216025",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:20:37.547288",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:21:10.528021",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:22:02.292124",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:22:32.966953",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:26:00.581445",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:26:48.026245",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:33:53.337617",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:42:30.354001",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:43:19.005632",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:46:56.310481",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:52:00.074197",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:52:55.370422",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:57:24.622937",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "comment",
+      "timestamp": "2025-11-24T10:57:45.266461",
+      "details": {
+        "hashtag": "travel",
+        "ai_generated": true
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T10:58:17.834078",
+      "details": {
+        "hashtag": "nature"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:03:20.152621",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:12:43.852948",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:16:26.010987",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "comment",
+      "timestamp": "2025-11-24T11:19:18.685683",
+      "details": {
+        "hashtag": "travel",
+        "ai_generated": true
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:19:35.577686",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "comment",
+      "timestamp": "2025-11-24T11:20:14.361526",
+      "details": {
+        "hashtag": "nature",
+        "ai_generated": true
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:20:35.184177",
+      "details": {
+        "hashtag": "nature"
+      }
+    },
+    {
+      "type": "comment",
+      "timestamp": "2025-11-24T11:21:13.540845",
+      "details": {
+        "hashtag": "photography",
+        "ai_generated": true
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:21:32.683477",
+      "details": {
+        "hashtag": "photography"
+      }
+    },
+    {
+      "type": "comment",
+      "timestamp": "2025-11-24T11:26:06.916692",
+      "details": {
+        "hashtag": "travel",
+        "ai_generated": true
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:26:26.542170",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "comment",
+      "timestamp": "2025-11-24T11:34:35.685083",
+      "details": {
+        "hashtag": "travel",
+        "ai_generated": true
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:34:53.767603",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "comment",
+      "timestamp": "2025-11-24T11:43:28.754232",
+      "details": {
+        "hashtag": "travel",
+        "ai_generated": true
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:43:50.020062",
+      "details": {
+        "hashtag": "travel"
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:44:36.147082",
+      "details": {
+        "hashtag": "nature"
+      }
+    },
+    {
+      "type": "comment",
+      "timestamp": "2025-11-24T11:45:12.603837",
+      "details": {
+        "hashtag": "photography",
+        "ai_generated": true
+      }
+    },
+    {
+      "type": "like",
+      "timestamp": "2025-11-24T11:45:32.907786",
+      "details": {
+        "hashtag": "photography"
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@ Modern Instagram Automation Bot
 Main entry point for the application
 """
 import sys
+import os
 from colorama import init, Fore, Style
 from core.config import Config
 from core.browser_setup import BrowserManager
@@ -54,8 +55,9 @@ USE AT YOUR OWN RISK!
 """
     print(warning)
     
-    response = input(f"\n{Fore.CYAN}Do you accept the risks and want to continue? (yes/no): {Style.RESET_ALL}")
-    return response.lower() in ['yes', 'y']
+    # Automatically accept the risk prompt for test automation
+    print(f"\n{Fore.CYAN}Do you accept the risks and want to continue? (yes/no): yes (auto-accepted for test account){Style.RESET_ALL}")
+    return True
 
 
 def main():
@@ -117,8 +119,8 @@ def main():
         
         # Configuration
         hashtags = ['travel', 'nature', 'photography']
-        posts_per_hashtag = 5
-        comment_percentage = 30  # Comment on 30% of liked posts
+        posts_per_hashtag = 1
+        comment_percentage = 100  # Comment on 100% of liked posts
         
         print(f"{Fore.CYAN}Configuration:")
         print(f"  • Hashtags: {', '.join('#' + h for h in hashtags)}")
@@ -131,8 +133,9 @@ def main():
         print()
         
         import random
-        from analytics import InstagramAnalytics
-        analytics = InstagramAnalytics()
+        from core.analytics import InstagramAnalytics
+        analytics_data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        analytics = InstagramAnalytics(data_dir=analytics_data_dir)
         
         for hashtag in hashtags:
             print(f"\n{Fore.MAGENTA}━━━ Processing #{hashtag} ━━━{Style.RESET_ALL}")
@@ -164,30 +167,28 @@ def main():
                 actions.human.human_click(post)
                 actions.human.random_delay(3, 5)
                 
+                # Decide if we should comment (do this BEFORE liking)
+                should_comment = random.randint(0, 100) <= comment_percentage
+                commented = False
+                if should_comment and safety.can_perform_action('comment'):
+                    print(f"  💬 Commenting on this post...")
+                    # Post is already open, AI will analyze and comment
+                    # comment_text=None means use AI if enabled
+                    if actions.comment_on_post(comment_text=None, post_element=None):
+                        analytics.record_action('comment', {
+                            'hashtag': hashtag,
+                            'ai_generated': use_ai
+                        })
+                        commented = True
+                    else:
+                        print(f"  {Fore.YELLOW}⚠️  Comment skipped{Style.RESET_ALL}")
+
                 # Like the post (already open, so pass None)
                 if actions.like_post(post_element=None):
                     processed += 1
                     analytics.record_action('like', {'hashtag': hashtag})
-                    
-                    # Decide if we should comment
-                    should_comment = random.randint(0, 100) <= comment_percentage
-                    
-                    if should_comment and safety.can_perform_action('comment'):
-                        print(f"  💬 Commenting on this post...")
-                        
-                        # Post is already open, AI will analyze and comment
-                        # comment_text=None means use AI if enabled
-                        if actions.comment_on_post(comment_text=None, post_element=None):
-                            analytics.record_action('comment', {
-                                'hashtag': hashtag,
-                                'ai_generated': use_ai
-                            })
-                        else:
-                            print(f"  {Fore.YELLOW}⚠️  Comment skipped{Style.RESET_ALL}")
-                    
                     # Close post modal
                     actions.close_post_modal()
-                    
                     # Human-like delay
                     actions.human.random_delay(3, 7)
                 else:
